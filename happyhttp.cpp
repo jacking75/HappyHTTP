@@ -182,7 +182,7 @@ struct in_addr *atoaddr( const char* address)
 
 	// First try nnn.nnn.nnn.nnn form
 	saddr.s_addr = inet_addr(address);
-	if (saddr.s_addr != -1)
+	if (saddr.s_addr != INADDR_NONE)
 		return &saddr;
 
 	// Startup socket
