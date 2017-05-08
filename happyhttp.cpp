@@ -336,7 +336,9 @@ void Connection::request( const char* method,
 		while( *h )
 		{
 			const char* name = *h++;
+#ifndef NDEBUG
 			const char* value = *h++;
+#endif
 			assert( value != 0 );	// name with no value!
 
 			if( 0==_stricmp( name, "content-length" ) )
@@ -516,8 +518,8 @@ void Connection::pump()
 
 
 Response::Response( const char* method, Connection& conn ) :
-	m_Connection( conn ),
 	m_State( STATUSLINE ),
+	m_Connection( conn ),
 	m_Method( method ),
 	m_Version( 0 ),
 	m_Status(0),
