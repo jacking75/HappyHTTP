@@ -169,44 +169,25 @@ bool datawaiting( int sock )
 	else
 		return false;
 }
-
+	
 
 // Try to work out address from string
 // returns 0 if bad
 struct in_addr *atoaddr( const char* address)
 {
 	struct hostent *host;
-	struct addrinfo hints, *res;
 	static struct in_addr saddr;
-  int err;
 
 	// First try nnn.nnn.nnn.nnn form
 	saddr.s_addr = inet_addr(address);
 	if (saddr.s_addr != INADDR_NONE)
 		return &saddr;
 
-	// Startup socket
-	WSAData data;
-	WSAStartup(MAKEWORD(2,0), &data);
+	host = gethostbyname(address);
+	if( host )
+		return (struct in_addr *) *host->h_addr_list;
 
-	// Hits to type of connection we are hitting
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_family = AF_INET;
-
-	// Get the address, err will be socket error code
-	if ((err = getaddrinfo(address, NULL, &hints, &res)) != 0) {
-		//printf("Socket error #%d\n", err);
-		return 0;
-	}
-
-	// Get the IP address of the server
-	saddr.S_un = ((struct sockaddr_in *)(res->ai_addr))->sin_addr.S_un;
-	//printf("ip address : %s\n", inet_ntoa(saddr));
-	freeaddrinfo(res);
-
-	// Return the address
-	return &saddr;
+	return 0;
 }
 
 
