@@ -76,7 +76,6 @@ const char* GetWinsockErrorString( int err );
 void BailOnSocketError( const char* context )
 {
 #ifdef _WIN32
-
 	int e = WSAGetLastError();
 	const char* msg = GetWinsockErrorString( e );
 #else
@@ -87,7 +86,6 @@ void BailOnSocketError( const char* context )
 
 
 #ifdef _WIN32
-
 const char* GetWinsockErrorString( int err )
 {
 	switch( err)
@@ -146,7 +144,6 @@ const char* GetWinsockErrorString( int err )
 
 	return "unknown";
 };
-
 #endif // _WIN32
 
 
@@ -162,13 +159,16 @@ bool datawaiting( int sock )
 	tv.tv_usec = 0;
 
 	int r = select( sock+1, &fds, NULL, NULL, &tv);
-	if (r < 0)
-		BailOnSocketError( "select" );
+	if (r < 0) {
+		BailOnSocketError("select");
+	}
 
-	if( FD_ISSET( sock, &fds ) )
+	if (FD_ISSET(sock, &fds)) {
 		return true;
-	else
+	}
+	else {
 		return false;
+	}
 }
 	
 
@@ -181,12 +181,14 @@ struct in_addr *atoaddr( const char* address)
 
 	// First try nnn.nnn.nnn.nnn form
 	saddr.s_addr = inet_addr(address);
-	if (saddr.s_addr != INADDR_NONE)
+	if (saddr.s_addr != INADDR_NONE) {
 		return &saddr;
+	}
 
 	host = gethostbyname(address);
-	if( host )
+	if (host) {
 		return (struct in_addr *) *host->h_addr_list;
+	}
 
 	return 0;
 }
@@ -210,8 +212,9 @@ Wobbly::Wobbly( const char* fmt, ... )
 	va_start( ap,fmt);
 	int n = vsnprintf( m_Message, MAXLEN, fmt, ap );
 	va_end( ap );
-	if(n==MAXLEN)
-		m_Message[MAXLEN-1] = '\0';
+	if (n == MAXLEN) {
+		m_Message[MAXLEN - 1] = '\0';
+	}
 }
 
 
@@ -255,8 +258,9 @@ void Connection::setcallbacks(
 void Connection::connect()
 {
 	in_addr* addr = atoaddr( m_Host.c_str() );
-	if( !addr )
-		throw Wobbly( "Invalid network address" );
+	if (!addr) {
+		throw Wobbly("Invalid network address");
+	}
 
 	sockaddr_in address;
 	memset( (char*)&address, 0, sizeof(address) );
@@ -264,22 +268,24 @@ void Connection::connect()
 	address.sin_port = htons( m_Port );
 	address.sin_addr.s_addr = addr->s_addr;
 
-	m_Sock = socket( AF_INET, SOCK_STREAM, 0 );
-	if( m_Sock < 0 )
-		BailOnSocketError( "socket()" );
-
+	m_Sock = (int)socket( AF_INET, SOCK_STREAM, 0 );
+	if (m_Sock < 0) {
+		BailOnSocketError("socket()");
+	}
 //	printf("Connecting to %s on port %d.\n",inet_ntoa(*addr), port);
 
-	if( ::connect( m_Sock, (sockaddr const*)&address, sizeof(address) ) < 0 )
-		BailOnSocketError( "connect()" );
+	if (::connect(m_Sock, (sockaddr const*)&address, sizeof(address)) < 0) {
+		BailOnSocketError("connect()");
+	}
 }
 
 
 void Connection::close()
 {
 #ifdef _WIN32
-	if( m_Sock >= 0 )
-		::closesocket( m_Sock );
+	if (m_Sock >= 0) {
+		::closesocket(m_Sock);
+	}
 #else
 	if( m_Sock >= 0 )
 		::close( m_Sock );
@@ -330,8 +336,9 @@ void Connection::request( const char* method,
 
 	putrequest( method, url );
 
-	if( body && !gotcontentlength )
-		putheader( "Content-Length", bodysize );
+	if (body && !gotcontentlength) {
+		putheader("Content-Length", bodysize);
+	}
 
 	if( headers )
 	{
@@ -345,9 +352,9 @@ void Connection::request( const char* method,
 	}
 	endheaders();
 
-	if( body )
-		send( body, bodysize );
-
+	if (body) {
+		send(body, bodysize);
+	}
 }
 
 
@@ -355,8 +362,9 @@ void Connection::request( const char* method,
 
 void Connection::putrequest( const char* method, const char* url )
 {
-	if( m_State != IDLE )
-		throw Wobbly( "Request already issued" );
+	if (m_State != IDLE) {
+		throw Wobbly("Request already issued");
+	}
 
 	m_State = REQ_STARTED;
 
@@ -379,8 +387,9 @@ void Connection::putrequest( const char* method, const char* url )
 
 void Connection::putheader( const char* header, const char* value )
 {
-	if( m_State != REQ_STARTED )
-		throw Wobbly( "putheader() failed" );
+	if (m_State != REQ_STARTED) {
+		throw Wobbly("putheader() failed");
+	}
 	m_Buffer.push_back( string(header) + ": " + string( value ) );
 }
 
@@ -393,21 +402,24 @@ void Connection::putheader( const char* header, int numericvalue )
 
 void Connection::endheaders()
 {
-	if( m_State != REQ_STARTED )
-		throw Wobbly( "Cannot send header" );
+	if (m_State != REQ_STARTED) {
+		throw Wobbly("Cannot send header");
+	}
 	m_State = IDLE;
 
 	m_Buffer.push_back( "" );
 
 	string msg;
 	vector< string>::const_iterator it;
-	for( it = m_Buffer.begin(); it != m_Buffer.end(); ++it )
+	for (it = m_Buffer.begin(); it != m_Buffer.end(); ++it)
+	{
 		msg += (*it) + "\r\n";
+	}
 
 	m_Buffer.clear();
 
 //	printf( "%s", msg.c_str() );
-	send( (const unsigned char*)msg.c_str(), msg.size() );
+	send( (const unsigned char*)msg.c_str(), (int)msg.size() );
 }
 
 
@@ -416,8 +428,9 @@ void Connection::send( const unsigned char* buf, int numbytes )
 {
 //	fwrite( buf, 1,numbytes, stdout );
 	
-	if( m_Sock < 0 )
+	if (m_Sock < 0) {
 		connect();
+	}
 
 	while( numbytes > 0 )
 	{
@@ -426,8 +439,9 @@ void Connection::send( const unsigned char* buf, int numbytes )
 #else
 		int n = ::send( m_Sock, buf, numbytes, 0 );
 #endif
-		if( n<0 )
-			BailOnSocketError( "send()" );
+		if (n < 0) {
+			BailOnSocketError("send()");
+		}
 		numbytes -= n;
 		buf += n;
 	}
@@ -436,18 +450,21 @@ void Connection::send( const unsigned char* buf, int numbytes )
 
 void Connection::pump()
 {
-	if( m_Outstanding.empty() )
+	if (m_Outstanding.empty()) {
 		return;		// no requests outstanding
+	}
 
 	assert( m_Sock >0 );	// outstanding requests but no connection!
 
-	if( !datawaiting( m_Sock ) )
+	if (!datawaiting(m_Sock)) {
 		return;				// recv will block
+	}
 
 	unsigned char buf[ 2048 ];
 	int a = recv( m_Sock, (char*)buf, sizeof(buf), 0 );
-	if( a<0 )
-		BailOnSocketError( "recv()" );
+	if (a < 0) {
+		BailOnSocketError("recv()");
+	}
 
 	if( a== 0 )
 	{
@@ -551,8 +568,9 @@ const char* Response::getreason() const
 // Connection has closed
 void Response::notifyconnectionclosed()
 {
-	if( m_State == COMPLETE )
+	if (m_State == COMPLETE) {
 		return;
+	}
 
 	// eof can be valid...
 	if( m_State == BODY &&
@@ -665,12 +683,14 @@ int Response::ProcessDataChunked( const unsigned char* data, int count )
 	assert( m_Chunked );
 
 	int n = count;
-	if( n>m_ChunkLeft )
+	if (n > m_ChunkLeft) {
 		n = m_ChunkLeft;
+	}
 
 	// invoke callback to pass out the data
-	if( m_Connection.m_ResponseDataCB )
-		(m_Connection.m_ResponseDataCB)( this, m_Connection.m_UserData, data, n );
+	if (m_Connection.m_ResponseDataCB) {
+		(m_Connection.m_ResponseDataCB)(this, m_Connection.m_UserData, data, n);
+	}
 
 	m_BytesRead += n;
 
@@ -693,19 +713,22 @@ int Response::ProcessDataNonChunked( const unsigned char* data, int count )
 	{
 		// we know how many bytes to expect
 		int remaining = m_Length - m_BytesRead;
-		if( n > remaining )
+		if (n > remaining) {
 			n = remaining;
+		}
 	}
 
 	// invoke callback to pass out the data
-	if( m_Connection.m_ResponseDataCB )
-		(m_Connection.m_ResponseDataCB)( this, m_Connection.m_UserData, data, n );
+	if (m_Connection.m_ResponseDataCB) {
+		(m_Connection.m_ResponseDataCB)(this, m_Connection.m_UserData, data, n);
+	}
 
 	m_BytesRead += n;
 
 	// Finish if we know we're done. Else we're waiting for connection close.
-	if( m_Length != -1 && m_BytesRead == m_Length )
+	if (m_Length != -1 && m_BytesRead == m_Length) {
 		Finish();
+	}
 
 	return n;
 }
@@ -716,8 +739,9 @@ void Response::Finish()
 	m_State = COMPLETE;
 
 	// invoke the callback
-	if( m_Connection.m_ResponseCompleteCB )
-		(m_Connection.m_ResponseCompleteCB)( this, m_Connection.m_UserData );
+	if (m_Connection.m_ResponseCompleteCB) {
+		(m_Connection.m_ResponseCompleteCB)(this, m_Connection.m_UserData);
+	}
 }
 
 
@@ -726,29 +750,44 @@ void Response::ProcessStatusLine( std::string const& line )
 	const char* p = line.c_str();
 
 	// skip any leading space
-	while( *p && *p == ' ' )
+	while (*p && *p == ' ')
+	{
 		++p;
+	}
 
 	// get version
-	while( *p && *p != ' ' )
+	while (*p && *p != ' ')
+	{
 		m_VersionString += *p++;
-	while( *p && *p == ' ' )
+	}
+
+	while (*p && *p == ' ')
+	{
 		++p;
+	}
 
 	// get status code
 	std::string status;
-	while( *p && *p != ' ' )
+	while (*p && *p != ' ')
+	{
 		status += *p++;
-	while( *p && *p == ' ' )
+	}
+
+	while (*p && *p == ' ')
+	{
 		++p;
+	}
 
 	// rest of line is reason
-	while( *p )
+	while (*p)
+	{
 		m_Reason += *p++;
+	}
 
 	m_Status = atoi( status.c_str() );
-	if( m_Status < 100 || m_Status > 999 )
-		throw Wobbly( "BadStatusLine (%s)", line.c_str() );
+	if (m_Status < 100 || m_Status > 999) {
+		throw Wobbly("BadStatusLine (%s)", line.c_str());
+	}
 
 /*
 	printf( "version: '%s'\n", m_VersionString.c_str() );
@@ -774,23 +813,29 @@ void Response::ProcessStatusLine( std::string const& line )
 // process accumulated header data
 void Response::FlushHeader()
 {
-	if( m_HeaderAccum.empty() )
+	if (m_HeaderAccum.empty()) {
 		return;	// no flushing required
+	}
 
 	const char* p = m_HeaderAccum.c_str();
 
 	std::string header;
 	std::string value;
-	while( *p && *p != ':' )
-		header += tolower( *p++ );
+	while (*p && *p != ':')
+	{
+		header += tolower(*p++);
+	}
 
 	// skip ':'
-	if( *p )
+	if (*p) {
 		++p;
+	}
 
 	// skip space
-	while( *p && (*p ==' ' || *p=='\t') )
+	while (*p && (*p == ' ' || *p == '\t'))
+	{
 		++p;
+	}
 
 	value = p; // rest of line is value
 
@@ -821,8 +866,10 @@ void Response::ProcessHeaderLine( std::string const& line )
 	{
 		// it's a continuation line - just add it to previous data
 		++p;
-		while( *p && isspace( *p ) )
+		while (*p && isspace(*p))
+		{
 			++p;
+		}
 
 		m_HeaderAccum += ' ';
 		m_HeaderAccum += p;
@@ -840,9 +887,9 @@ void Response::ProcessTrailerLine( std::string const& line )
 {
 	// TODO: handle trailers?
 	// (python httplib doesn't seem to!)
-	if( line.empty() )
+	if (line.empty()) {
 		Finish();
-
+	}
 	// just ignore all the trailers...
 }
 
@@ -887,14 +934,16 @@ void Response::BeginBody()
 
 	// if we're not using chunked mode, and no length has been specified,
 	// assume connection will close at end.
-	if( !m_WillClose && !m_Chunked && m_Length == -1 )
+	if (!m_WillClose && !m_Chunked && m_Length == -1) {
 		m_WillClose = true;
+	}
 
 
 
 	// Invoke the user callback, if any
-	if( m_Connection.m_ResponseBeginCB )
-		(m_Connection.m_ResponseBeginCB)( this, m_Connection.m_UserData );
+	if (m_Connection.m_ResponseBeginCB) {
+		(m_Connection.m_ResponseBeginCB)(this, m_Connection.m_UserData);
+	}
 
 /*
 	printf("---------BeginBody()--------\n");
@@ -928,8 +977,9 @@ bool Response::CheckClose()
 
 	// Older HTTP
 	// keep-alive header indicates persistant connection 
-	if( getheader( "keep-alive" ) )
+	if (getheader("keep-alive")) {
 		return false;
+	}
 
 	// TODO: some special case handling for Akamai and netscape maybe?
 	// (see _check_close() in python httplib.py for details)

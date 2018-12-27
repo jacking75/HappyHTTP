@@ -42,8 +42,6 @@ struct in_addr;
 
 namespace happyhttp
 {
-
-
 class Response;
 
 // Helper Functions
@@ -126,10 +124,9 @@ class Wobbly
 {
 public:
 	Wobbly( const char* fmt, ... );
-	const char* what() const
-		{ return m_Message; }
+	const char* what() const { return m_Message; }
 protected:
-	enum { MAXLEN=256 };
+	enum { MAXLEN=256 };	
 	char m_Message[ MAXLEN ];
 };
 
