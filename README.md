@@ -1,6 +1,18 @@
 HappyHTTP
 =========
 
+한국어
+=========
+1 header file로 변경하였다. 프로젝트에서 happyhttp.h 파일을 include만 하면 된다.  
+* * * * *
+
+
+영어
+=========
+1 header file. Just include the file happyhttp.h in your project.  
+* * * * *
+
+
 *A simple HTTP library*
  
  Fork of [http://www.scumways.com/happyhttp/happyhttp.html](http://www.scumways.com/happyhttp/happyhttp.html)
