@@ -3,13 +3,15 @@ HappyHTTP
 
 한국어
 =========
-1 header file로 변경하였다. 프로젝트에서 happyhttp.h 파일을 include만 하면 된다.  
+- Windows 플랫폼에서 빌드 되도록 수정.
+- VS 솔루션 추가.
 * * * * *
 
 
-영어
+English
 =========
-1 header file. Just include the file happyhttp.h in your project.  
+- Modified to build on Windows platform.
+- Add VS solution.
 * * * * *
 
 
@@ -231,10 +233,8 @@ returns a text description.
 TODO
 ----
 
--   Proxy support
 -   URL manipulation functions
 -   Improve error text (and maybe some more exception types?)
--   HTTP 2 Support
 -   Modern C++ implementation (smart pointers, etc.)
 
 * * * * *

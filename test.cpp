@@ -2,6 +2,12 @@
 #include <cstdio>
 #include <cstring>
 
+#ifdef _WIN32
+	#pragma comment(lib, "ws2_32")
+	#include <WinSock2.h>
+	#include <ws2tcpip.h>
+#endif
+
 int count=0;
 
 void OnBegin( const happyhttp::Response* r, void* userdata )
@@ -59,7 +65,7 @@ void Test2()
 			"/happyhttp/test.php",
 			headers,
 			(const unsigned char*)body,
-			strlen(body) );
+		(int)strlen(body) );
 
 	while( conn.outstanding() )
 		conn.pump();
@@ -71,7 +77,7 @@ void Test3()
 	// POST example using lower-level interface
 
 	const char* params = "answer=42&foo=bar";
-	int l = strlen(params);
+	auto l = (int)strlen(params);
 
 	happyhttp::Connection conn( "scumways.com", 80 );
 	conn.setcallbacks( OnBegin, OnData, OnComplete, 0 );
@@ -95,7 +101,7 @@ int main()
 {
 #ifdef _WIN32
     WSAData wsaData;
-    int code = WSAStartup(MAKEWORD(1, 1), &wsaData);
+    int code = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if( code != 0 )
 	{
 		fprintf(stderr, "shite. %d\n",code);

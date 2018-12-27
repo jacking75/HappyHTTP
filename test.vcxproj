@@ -142,6 +142,7 @@
     <ClInclude Include="happyhttp.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="happyhttp.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
