@@ -176,20 +176,30 @@ bool datawaiting( int sock )
 // returns 0 if bad
 struct in_addr *atoaddr( const char* address)
 {
-	struct hostent *host;
-	static struct in_addr saddr;
+	//struct hostent *host;
+	//static struct in_addr saddr;
 
-	// First try nnn.nnn.nnn.nnn form
-	saddr.s_addr = inet_addr(address);
-	if (saddr.s_addr != INADDR_NONE) {
-		return &saddr;
+	//// First try nnn.nnn.nnn.nnn form
+	//saddr.s_addr = inet_addr(address);
+	//if (saddr.s_addr != INADDR_NONE) {
+	//	return &saddr;
+	//}
+
+	//host = gethostbyname(address);
+	//if (host) {
+	//	return (struct in_addr *) *host->h_addr_list;
+	//}
+	struct addrinfo* res = nullptr;
+	struct addrinfo hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+	
+	if (getaddrinfo(address, "3306", &hints, &res) == 0)
+	{
+		return &((sockaddr_in*)res->ai_addr)->sin_addr;		
 	}
-
-	host = gethostbyname(address);
-	if (host) {
-		return (struct in_addr *) *host->h_addr_list;
-	}
-
 	return 0;
 }
 
@@ -210,7 +220,7 @@ Wobbly::Wobbly( const char* fmt, ... )
 {
 	va_list ap;
 	va_start( ap,fmt);
-	int n = vsnprintf( m_Message, MAXLEN, fmt, ap );
+	int n = _vsnprintf_s( m_Message, MAXLEN, fmt, ap );
 	va_end( ap );
 	if (n == MAXLEN) {
 		m_Message[MAXLEN - 1] = '\0';
@@ -396,7 +406,7 @@ void Connection::putheader( const char* header, const char* value )
 void Connection::putheader( const char* header, int numericvalue )
 {
 	char buf[32];
-	sprintf( buf, "%d", numericvalue );
+	sprintf_s( buf, 32, "%d", numericvalue );
 	putheader( header, buf );
 }
 
